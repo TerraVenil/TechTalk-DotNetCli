@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "DotNetCli.CommandLineParser": {
+        "commandName": "Project",
+        "commandLineArgs": "--h \"http://localhost:2000\" --d \"node1\""
+    }
+  }
+}
