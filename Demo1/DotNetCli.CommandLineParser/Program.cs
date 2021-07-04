@@ -37,7 +37,7 @@ var services = CreateServices(arguments);
 using (var scope = services.CreateScope())
 {
     var migrator = services.GetService<IMigrationRunner>();
-    migrator.MigrateUp();
+    //migrator.MigrateUp();
 }
 
 WriteLine("Database was migrated");
