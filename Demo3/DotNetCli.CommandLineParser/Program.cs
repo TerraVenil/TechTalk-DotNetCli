@@ -26,10 +26,10 @@ namespace DotNetCli.CommandLineParser
                     IsRequired = true
                 });
             rootCommand.AddGlobalOption(
-                new Option<string>(new[] { "--d", "-d", "--consulDatacenter", nameof(CommandLineArguments.ConsulDatacenter) }, getDefaultValue: () => "default", description: "Define consul datacenter endpoint")
+                new Option(new[] { "--d", "-d", "--consulDatacenter" }, description: "Define consul datacenter endpoint", typeof(string), getDefaultValue: () => "default", arity: ArgumentArity.ExactlyOne)
                 {
                     IsRequired = true
-                });
+                }.FromAmong("node1", "node2", "node3"));
 
             return await new CommandLineBuilder(rootCommand)
                 .UseHost(host =>

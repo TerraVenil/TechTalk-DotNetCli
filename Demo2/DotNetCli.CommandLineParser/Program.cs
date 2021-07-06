@@ -28,12 +28,13 @@ namespace DotNetCli.CommandLineParser
                     IsRequired = true
                 });
             rootCommand.AddGlobalOption(
-                new Option<string>(new[] { "--d", "-d", "--consulDatacenter" }, getDefaultValue: () => "default", description: "Define consul datacenter endpoint")
+                new Option(new[] { "--d", "-d", "--consulDatacenter" }, description: "Define consul datacenter endpoint", typeof(string), getDefaultValue: () => "default", arity: ArgumentArity.ExactlyOne)
                 {
                     IsRequired = true
-                });
+                }.FromAmong("node1", "node2", "node3"));
 
             return await new CommandLineBuilder(rootCommand)
+                .UseDefaults()
                 .Build()
                 .InvokeAsync(args);
         }
@@ -43,6 +44,7 @@ namespace DotNetCli.CommandLineParser
             var services = new ServiceCollection();
 
             services
+                .AddSingleton<IConsulService, ConsulService>()
                 .AddFluentMigratorCore()
                 .ConfigureRunner(builder => builder
                     .AddSqlServer()
@@ -50,7 +52,7 @@ namespace DotNetCli.CommandLineParser
                     {
                         var commandLineArguments = sp.GetRequiredService<IOptionsMonitor<CommandLineArguments>>().CurrentValue;
 
-                        return sp.GetRequiredService<ConsulService>().GetConnectionString(commandLineArguments);
+                        return sp.GetRequiredService<IConsulService>().GetConnectionString(commandLineArguments);
                     })
                     .ScanIn(typeof(CommandLineArguments).Assembly).For.All());
 
