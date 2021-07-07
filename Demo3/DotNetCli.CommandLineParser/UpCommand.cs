@@ -10,7 +10,7 @@ namespace DotNetCli.CommandLineParser
 {
     public class UpCommand : Command
     {
-        public UpCommand(string name) : base(name, "Executes up migration")
+        public UpCommand() : base("up", "Executes up migration")
         {
             Handler = CommandHandler.Create<CommandLineArguments, IHost>(UpHanlder);
         }

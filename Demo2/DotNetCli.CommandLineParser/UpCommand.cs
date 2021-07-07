@@ -13,9 +13,10 @@ namespace DotNetCli.CommandLineParser
     {
         private readonly IServiceProvider _serviceProvider;
 
-        public UpCommand(string name, IServiceProvider serviceProvider) : base(name, "Executes up migration")
+        public UpCommand(IServiceProvider serviceProvider) : base("up", "Executes up migration")
         {
             _serviceProvider = serviceProvider;
+
             Handler = CommandHandler.Create<CommandLineArguments, ConsulService>(UpHandler);
         }
 

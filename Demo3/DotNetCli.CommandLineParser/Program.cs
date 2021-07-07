@@ -18,7 +18,7 @@ namespace DotNetCli.CommandLineParser
         {
             RootCommand rootCommand = new RootCommand(description: "Execute inventory items migrations.") { Name = "sql-migrator" };
 
-            rootCommand.AddCommand(new UpCommand("up"));
+            rootCommand.AddCommand(new UpCommand());
 
             rootCommand.AddGlobalOption(
                 new Option<Uri>(new[] { "--h", "-h", "--consulHost", nameof(CommandLineArguments.СonsulHost) }, getDefaultValue: () => new Uri("http://localhost:8500"), description: "Define consul host endpoint")

@@ -16,31 +16,6 @@ namespace DotNetCli.CommandLineParser
     {
         static async Task<int> Main(string[] args)
         {
-            var services = CreateServices();
-
-            RootCommand rootCommand = new RootCommand(description: "Execute inventory items migrations.") { Name = "sql-migrator" };
-
-            rootCommand.AddCommand(new UpCommand("up", services));
-
-            rootCommand.AddGlobalOption(
-                new Option<Uri>(new[] { "--h", "-h", "--consulHost" }, getDefaultValue: () => new Uri("http://localhost:8500"), description: "Define consul host endpoint")
-                {
-                    IsRequired = true
-                });
-            rootCommand.AddGlobalOption(
-                new Option(new[] { "--d", "-d", "--consulDatacenter" }, description: "Define consul datacenter endpoint", typeof(string), getDefaultValue: () => "default", arity: ArgumentArity.ExactlyOne)
-                {
-                    IsRequired = true
-                }.FromAmong("node1", "node2", "node3"));
-
-            return await new CommandLineBuilder(rootCommand)
-                .UseDefaults()
-                .Build()
-                .InvokeAsync(args);
-        }
-
-        static IServiceProvider CreateServices()
-        {
             var services = new ServiceCollection();
 
             services
@@ -56,16 +31,35 @@ namespace DotNetCli.CommandLineParser
                     })
                     .ScanIn(typeof(CommandLineArguments).Assembly).For.All());
 
-            services.AddOptions<CommandLineArguments>();
-
-            services.AddLogging(log => log.AddFluentMigratorConsole())
-                .Configure<FluentMigratorLoggerOptions>(config =>
+            services
+                .AddSingleton(typeof(UpCommand), typeof(UpCommand))
+                .AddSingleton<RootCommand>(sp =>
                 {
-                    config.ShowSql = true;
-                    config.ShowElapsedTime = true;
-                });
+                    RootCommand rootCommand = new RootCommand(description: "Execute inventory items migrations.") { Name = "sql-migrator" };
 
-            return services.BuildServiceProvider();
+                    rootCommand.AddCommand(sp.GetRequiredService<UpCommand>());
+
+                    rootCommand.AddGlobalOption(
+                        new Option<Uri>(new[] { "--h", "-h", "--consulHost" }, getDefaultValue: () => new Uri("http://localhost:8500"), description: "Define consul host endpoint")
+                        {
+                            IsRequired = true
+                        });
+                    rootCommand.AddGlobalOption(
+                        new Option(new[] { "--d", "-d", "--consulDatacenter" }, description: "Define consul datacenter endpoint", typeof(string), getDefaultValue: () => "default", arity: ArgumentArity.ExactlyOne)
+                        {
+                            IsRequired = true
+                        }.FromAmong("node1", "node2", "node3"));
+
+                    return rootCommand;
+                })
+                .AddOptions<CommandLineArguments>();
+
+            var serviceProvider = services.BuildServiceProvider();
+
+            return await new CommandLineBuilder(serviceProvider.GetRequiredService<RootCommand>())
+                .UseDefaults()
+                .Build()
+                .InvokeAsync(args);
         }
     }
 }
